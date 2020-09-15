@@ -4,12 +4,15 @@ add "new game" somewhere so you don't have to rerun and then resize
 function [] = superTicTacToe(scale,figureNumber)
 	bigWin = [];
 	board = [];
-	indicators = [];
+	indicators = gobjects(9);
 	player = [];
 	bigBoard = [];
-	f = [];
-	ax = [];
+	f = gobjects(1);
+	ax = gobjects(1);
+	ng = gobjects(1);
 	colors = [0.9290    0.6940    0.1250; 0    0.4470    0.7410]; % rgb [orange; blue]
+	littleMarks = gobjects(0);
+	bigMarks = gobjects(0);
 
 	% check for input args and if they're acceptable
 	if nargin < 2 || isempty(figureNumber) || (~isnumeric(figureNumber) && ~ishandle(figureNumber))
@@ -59,12 +62,12 @@ function [] = superTicTacToe(scale,figureNumber)
 		m(2) = m(2) - ax.Position(2);
 		x = find(m(1)>a,1,'last');
 		y = 10-find(m(2)>a,1,'last');
-		if(m(1)<a(end) && m(2)<a(end) && strcmp(indicators(y,x).Visible,'on')) % checks that it was within the grid and if it was a legal move
+		if(m(1)<a(end) && m(2)<a(end) && all(m >= 0) && strcmp(indicators(y,x).Visible,'on')) % checks that it was within the grid and if it was a legal move
 			board(y,x) = player;
 			c = 'ox';
 			pind = player*0.5+1.5; % player index
 			
-			line(x-1/2,y-1/2,'Marker',c(pind),'MarkerSize',35*scale/650,'LineWidth',3*scale/650,'MarkerEdgeColor',colors(pind,:));
+			littleMarks(end+1) = line(x-1/2,y-1/2,'Marker',c(pind),'MarkerSize',35*scale/650,'LineWidth',3*scale/650,'MarkerEdgeColor',colors(pind,:));
 
 
 			littleWin = littleWinCheck(x,y); % check if this move won a subgrid
@@ -75,14 +78,14 @@ function [] = superTicTacToe(scale,figureNumber)
 
 				if(player==1) % draw big letters. not done with markers because marker edge size is limited to '6'
 					%draw x
-					line([3*a-2.6 3*a-0.4],[3*b-2.6 3*b-0.4],'LineWidth',18*scale/650,'Color',colors(pind,:));
-					line([3*a-2.6 3*a-0.4],[3*b-0.4 3*b-2.6],'LineWidth',18*scale/650,'Color',colors(pind,:));
+					bigMarks(end+1) = line([3*a-2.6 3*a-0.4],[3*b-2.6 3*b-0.4],'LineWidth',18*scale/650,'Color',colors(pind,:));
+					bigMarks(end+1) = line([3*a-2.6 3*a-0.4],[3*b-0.4 3*b-2.6],'LineWidth',18*scale/650,'Color',colors(pind,:));
 				else
 					t = linspace(0,2*pi+pi/24,50);
 					r = 1.2;
 					a2 = r*cos(t)+(a-0.5)*3;
 					b2 = r*sin(t)+(b-0.5)*3; 
-					line(a2,b2,'LineWidth',18*scale/650,'Color',colors(pind,:));
+					bigMarks(end+1) = line(a2,b2,'LineWidth',18*scale/650,'Color',colors(pind,:));
 				end
 
 				bigBoard(b,a) = player;
@@ -98,6 +101,10 @@ function [] = superTicTacToe(scale,figureNumber)
 				for i=1:numel(indicators)
 					indicators(i).FaceColor = colors(player*0.5+1.5,:);
 				end
+			end
+			if bigWin || nnz(bigBoard)==9
+				ng.Visible = 'on';
+				bigWin = true;
 			end
 		end
 	end
@@ -163,7 +170,7 @@ function [] = superTicTacToe(scale,figureNumber)
 	end
 
 	% starts a new game
-	function [] = gameSetup()
+	function [] = gameSetup(~,~)
 		board = zeros(9,9);
 		bigBoard = zeros(3,3);
 		player = 1;
@@ -173,6 +180,13 @@ function [] = superTicTacToe(scale,figureNumber)
 			indicators(i).Visible = 'on';
 			indicators(i).FaceColor = colors(player*0.5+1.5,:);
 		end
+		ng.Visible = 'off';
+		
+		% need to delete all the small and big markers
+		delete(littleMarks);
+		littleMarks = littleMarks(ishandle(littleMarks));
+		delete(bigMarks);
+		bigMarks = bigMarks(ishandle(bigMarks));
 	end
 
 	function [] = figureSetup(fignum)
@@ -200,11 +214,17 @@ function [] = superTicTacToe(scale,figureNumber)
 		ax.XColor = [1 1 1];
 		ax.YColor = [1 1 1];
 		axis equal
-		hold on
+% 		hold on
+		
+		ng = uicontrol(f,'Style','pushbutton',... % newgame button
+			'Position',[0 0, scale*0.2 scale*0.075],...
+			'String','New Game',...
+			'FontSize',14*scale/500,...
+			'Callback',@gameSetup,...
+			'Visible','off');
 
 		
-		indicators = patch;
-		delete(indicators(1));
+% 		indicators = gobjects(9);
 		for i=1:9
 			for j=1:9
 				indicators(j,i) = patch([0.1 0.1 0.9 0.9]+(i-1),[0.1 .9 .9 0.1]+(j-1),1,'FaceColor',colors(2,:),'FaceAlpha',0.5,'LineWidth',0.5*scale/650);
