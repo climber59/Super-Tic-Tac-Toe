@@ -7,6 +7,7 @@ function [] = superTicTacToe(figureNumber)
 	bigBoard = [];
 	f = [];
 	ax = [];
+	colors = [0.9290    0.6940    0.1250; 0    0.4470    0.7410]; % rgb [orange; blue]
 
 	if(nargin<1)
 		figureNumber = 1;
@@ -62,8 +63,8 @@ function [] = superTicTacToe(figureNumber)
 		if(m(1)<a(end) && m(2)<a(end) && strcmp(indicators(y,x).Visible,'on'))
 			board(y,x) = player;
 			c = 'ox';
-			d = [0.9290    0.6940    0.1250; 0    0.4470    0.7410];
-			plot(x-1/2,y-1/2,c(player*0.5+1.5),'MarkerSize',35*scale/650,'LineWidth',3,'MarkerEdgeColor',d(player*0.5+1.5,:));
+			
+			plot(x-1/2,y-1/2,c(player*0.5+1.5),'MarkerSize',35*scale/650,'LineWidth',3,'MarkerEdgeColor',colors(player*0.5+1.5,:));
 
 
 			w = littleWinCheck(x,y);
@@ -75,14 +76,14 @@ function [] = superTicTacToe(figureNumber)
 
 				if(player==1) % draw big letters. not done with markers because marker edge size is limited to '6'
 					%draw x
-					plot([3*a-2.6 3*a-0.4],[3*b-2.6 3*b-0.4],'LineWidth',18*scale/650,'Color',d(player*0.5+1.5,:));
-					plot([3*a-2.6 3*a-0.4],[3*b-0.4 3*b-2.6],'LineWidth',18*scale/650,'Color',d(player*0.5+1.5,:));
+					plot([3*a-2.6 3*a-0.4],[3*b-2.6 3*b-0.4],'LineWidth',18*scale/650,'Color',colors(player*0.5+1.5,:));
+					plot([3*a-2.6 3*a-0.4],[3*b-0.4 3*b-2.6],'LineWidth',18*scale/650,'Color',colors(player*0.5+1.5,:));
 				else
 					t = linspace(0,2*pi+pi/24,50);
 					r = 1.2;
 					a2 = r*cos(t)+(a-0.5)*3;
 					b2 = r*sin(t)+(b-0.5)*3; 
-					plot(a2,b2,'LineWidth',18*scale/650,'Color',d(player*0.5+1.5,:));
+					plot(a2,b2,'LineWidth',18*scale/650,'Color',colors(player*0.5+1.5,:));
 				end
 
 				bigBoard(b,a) = player;
@@ -95,6 +96,9 @@ function [] = superTicTacToe(figureNumber)
 			else
 				showMoves(x,y,w); % If a win - free move
 				player = -player;
+				for i=1:numel(indicators)
+					indicators(i).FaceColor = colors(player*0.5+1.5,:);
+				end
 			end
 		end
 	end
@@ -216,7 +220,7 @@ function [] = superTicTacToe(figureNumber)
 		delete(indicators(1));
 		for i=1:9
 			for j=1:9
-				indicators(j,i) = patch(w/9*[0.1 0.1 0.9 0.9]+(i-1)*w/9,h/9*[0.1 .9 .9 0.1]+(j-1)*h/9,1,'FaceColor',[0 1 0],'FaceAlpha',0.5);
+				indicators(j,i) = patch(w/9*[0.1 0.1 0.9 0.9]+(i-1)*w/9,h/9*[0.1 .9 .9 0.1]+(j-1)*h/9,1,'FaceColor',colors(2,:),'FaceAlpha',0.5);
 			end
 		end
 
