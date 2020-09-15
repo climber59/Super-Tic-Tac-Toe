@@ -1,8 +1,5 @@
 %{
 add "new game" somewhere so you don't have to rerun and then resize
-
-though difficult to do, if forced to go in a filled and tied subgrid, it
-shows no legal moves
 %}
 function [] = superTicTacToe(scale,figureNumber)
 	bigWin = [];
@@ -50,6 +47,7 @@ function [] = superTicTacToe(scale,figureNumber)
 
 	% handles clicks
 	function [] = mouseClick(~,~)
+		
 		if(bigWin)
 			return % do nothing if game is over
 		end
@@ -106,10 +104,13 @@ function [] = superTicTacToe(scale,figureNumber)
 
 	% show legal moves. turns the indicators on and off
 	function [] = showMoves(x,y,w)
-		a = mod(x,3)+3*(1-sign(mod(x,3)));
+		a = mod(x,3)+3*(1-sign(mod(x,3))); % big board coords that you are directed towards
 		b = mod(y,3)+3*(1-sign(mod(y,3)));
-
-		if(w || bigBoard(b,a)~=0) % previous move won a subgrid or corresponds to an already won/filled subgrid
+		
+		c = (1:3) + 3*(a-1); % array indices of targetted subgrid portion of board[], used to check for tied subgrids
+		d = (1:3) + 3*(b-1);
+		
+		if(w || bigBoard(b,a)~=0 || nnz(board(c,d))==9) % previous move won a subgrid or corresponds to an already won/filled subgrid
 			for i=1:numel(indicators)
 				if(board(i)==0)
 					indicators(i).Visible='on'; %turn on all unfilled squares
