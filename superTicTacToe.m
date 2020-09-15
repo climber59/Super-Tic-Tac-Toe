@@ -1,5 +1,5 @@
-function [] = superTicTacToe(figureNumber)
-	scale = [];
+function [] = superTicTacToe(scale,figureNumber)
+% 	scale = [];
 	bigWin = [];
 	board = [];
 	indicators = [];
@@ -9,44 +9,36 @@ function [] = superTicTacToe(figureNumber)
 	ax = [];
 	colors = [0.9290    0.6940    0.1250; 0    0.4470    0.7410]; % rgb [orange; blue]
 
-	if(nargin<1)
+	% check for input args and if they're acceptable
+	if nargin < 2 || isempty(figureNumber) || (~isnumeric(figureNumber) && ~ishandle(figureNumber))
 		figureNumber = 1;
 	end
-
+	temp = get(0,'ScreenSize');
+	if nargin<1 || ~isnumeric(scale) || isempty(scale)
+		scale = temp(4)/2; % set initial scale. Used for resizing of the window
+	end
+	if scale <= 0
+		scale = 1;
+	elseif scale > temp(4)
+		scale = temp(4);
+	end
+	
+	% Initialize
 	figureSetup(figureNumber);
 	gameSetup();
+	
 
 
 	function [] = rescale(~,~)
-		h = f.Position(4);
-		w = f.Position(3);
-		if(h/w<1)
-			s = h;
-		else
-			s = w;
+		s = min(f.Position(4),f.Position(3));
+		ax.Position(3:4) = ax.Position(3:4)*s/scale;
+		ax.Position(1:2) = (f.Position(3:4)-ax.Position(3:4))/2;
+		
+		for i=1:length(ax.Children)
+			ax.Children(i).LineWidth = ax.Children(i).LineWidth*s/scale;
+			ax.Children(i).MarkerSize = ax.Children(i).MarkerSize*s/scale;
 		end
-
-		j = [];
-		c = f.Children;
-		for i=1:length(c)
-			c(i).Position = c(i).Position*s/scale;
-			if( isa(c(i),'matlab.graphics.axis.Axes') )
-				j = i;
-				c(i).Position(1) = (f.Position(3)-c(i).Position(3))/2;
-				c(i).Position(2) = (f.Position(4)-c(i).Position(4))/2;
-			end
-		end
-
-		if(~isempty(j))
-			ax = c(j);
-			c = ax.Children;
-			for i=1:length(c)
-				c(i).LineWidth = c(i).LineWidth*s/scale;
-				c(i).MarkerSize = c(i).MarkerSize*s/scale;
-			end
-		end
-
-
+		
 		scale = s;
 	end
 
@@ -64,7 +56,7 @@ function [] = superTicTacToe(figureNumber)
 			board(y,x) = player;
 			c = 'ox';
 			
-			plot(x-1/2,y-1/2,c(player*0.5+1.5),'MarkerSize',35*scale/650,'LineWidth',3,'MarkerEdgeColor',colors(player*0.5+1.5,:));
+			plot(x-1/2,y-1/2,c(player*0.5+1.5),'MarkerSize',35*scale/650,'LineWidth',3*scale/650,'MarkerEdgeColor',colors(player*0.5+1.5,:));
 
 
 			w = littleWinCheck(x,y);
@@ -161,8 +153,6 @@ function [] = superTicTacToe(figureNumber)
 	end
 
 	function [w] = check(x,y,b)
-	% 	disp([x,y])
-	% 	b
 		w = true;
 		p = b(y,x)*3;
 		if(sum(b(:,x)) == p || sum(b(y,:)) == p)
@@ -194,9 +184,8 @@ function [] = superTicTacToe(figureNumber)
 		f.NumberTitle = 'off';
 
 		s = get(0,'ScreenSize');
-		w = 650; % equal to scale
+		w = scale;
 		h = w;
-		scale = h;
 		f.Position = [(s(3)-w)/2 (s(4)-h)/2, w h];
 
 		f.WindowButtonUpFcn = @mouseClick;
@@ -211,6 +200,8 @@ function [] = superTicTacToe(figureNumber)
 		ax.YTick = [];
 		ax.Box = 'off';
 		ax.YDir = 'reverse';
+		ax.XColor = [1 1 1];
+		ax.YColor = [1 1 1];
 		axis equal
 		hold on
 
@@ -220,17 +211,17 @@ function [] = superTicTacToe(figureNumber)
 		delete(indicators(1));
 		for i=1:9
 			for j=1:9
-				indicators(j,i) = patch(w/9*[0.1 0.1 0.9 0.9]+(i-1)*w/9,h/9*[0.1 .9 .9 0.1]+(j-1)*h/9,1,'FaceColor',colors(2,:),'FaceAlpha',0.5);
+				indicators(j,i) = patch([0.1 0.1 0.9 0.9]+(i-1),[0.1 .9 .9 0.1]+(j-1),1,'FaceColor',colors(2,:),'FaceAlpha',0.5,'LineWidth',0.5*scale/650);
 			end
 		end
 
 		for i=1:8
 			if(mod(i,3)==0)
-				line([0 w], i*h/9*[1 1],'LineWidth',5);
-				line(i*w/9*[1 1], [0 h],'LineWidth',5);
+				line([0 w], [i i],'LineWidth',5*scale/650);
+				line([i i], [0 h],'LineWidth',5*scale/650);
 			else
-				line([0 w], i*h/9*[1 1]);
-				line(i*w/9*[1 1], [0 h]);
+				line([0 w], [i i],'LineWidth',0.5*scale/650);
+				line([i i], [0 h],'LineWidth',0.5*scale/650);
 			end
 		end
 	end
