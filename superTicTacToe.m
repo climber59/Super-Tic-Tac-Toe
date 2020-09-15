@@ -1,5 +1,4 @@
 %{
-add "new game" somewhere so you don't have to rerun and then resize
 %}
 function [] = superTicTacToe(scale,figureNumber)
 	bigWin = [];
